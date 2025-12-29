@@ -2,16 +2,18 @@
 #include "RenderUtils.h"
 #include "search.h"
 
-// UI Variables
-bool render = false;
-int windowWidth = 1200, windowHeight = 800;
+// User Variables
+float sizesPercentage[2] = {0.9f, 0.7f};
 char buffer[256] = "";
-float sizesPercentage[2] = {0.3f, 0.2f};
+bool debug = false;
 
 // Private Variables & Constants
+int windowWidth, windowHeight;
+bool display = false;
 ULONGLONG g_lastKeyTime[256] = { 0 };
 bool firstFrame = false;
 
+float scaleFactor;
 int screenWidth = GetSystemMetrics(SM_CXSCREEN);
 int screenHeight = GetSystemMetrics(SM_CYSCREEN);
 
@@ -42,7 +44,11 @@ int main(int, char**)
 {
     // Make process DPI aware and obtain main monitor scale
     ImGui_ImplWin32_EnableDpiAwareness();
-    float main_scale = ImGui_ImplWin32_GetDpiScaleForMonitor(::MonitorFromPoint(POINT{ 0, 0 }, MONITOR_DEFAULTTOPRIMARY));
+    scaleFactor = ImGui_ImplWin32_GetDpiScaleForMonitor(::MonitorFromPoint(POINT{ 0, 0 }, MONITOR_DEFAULTTOPRIMARY));
+	screenWidth *= scaleFactor;
+	screenHeight *= scaleFactor;
+    windowWidth = screenWidth * 0.65;
+	windowHeight = screenHeight * 0.3;
 
     // Create application window
     WNDCLASSEXW wc = { sizeof(wc), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(nullptr), nullptr, nullptr, nullptr, nullptr, L"LocalCipher", nullptr };
@@ -88,8 +94,8 @@ int main(int, char**)
 
     // Setup scaling
     ImGuiStyle& style = ImGui::GetStyle();
-    style.ScaleAllSizes(main_scale);        // Bake a fixed style scale. (until we have a solution for dynamic style scaling, changing this requires resetting Style + calling this again)
-    style.FontScaleDpi = main_scale;        // Set initial font scale. (using io.ConfigDpiScaleFonts=true makes this unnecessary. We leave both here for documentation purpose)
+    style.ScaleAllSizes(scaleFactor);        // Bake a fixed style scale. (until we have a solution for dynamic style scaling, changing this requires resetting Style + calling this again)
+    style.FontScaleDpi = scaleFactor;        // Set initial font scale. (using io.ConfigDpiScaleFonts=true makes this unnecessary. We leave both here for documentation purpose)
 
     // Setup Platform/Renderer backends
     ImGui_ImplWin32_Init(hwnd);
@@ -138,9 +144,9 @@ int main(int, char**)
             ImGuiViewport* viewport = ImGui::GetMainViewport();
             ImVec2 viewportSize = viewport->Size;  // DX11 window size
 
-            if (KeyPressed(VK_HOME)) {
-                render = !render;
-                if (render) {
+            if (KeyPressed(VK_INSERT)) {
+                display = !display;
+                if (display) {
                     SetWindowLongPtr(hwnd, GWL_EXSTYLE, dwExStyle);
                     firstFrame = true;
                 }
@@ -155,7 +161,7 @@ int main(int, char**)
                 ImGuiWindowFlags_NoCollapse |
                 ImGuiWindowFlags_NoMove;
 
-            if (render)
+            if (display)
             {
                 SetForegroundWindow(hwnd); // SetFocus | SetActiveWindow didn't work
 
@@ -170,7 +176,7 @@ int main(int, char**)
 
                 ImGui::Begin("LocalCipherMain", nullptr, window_flags);
 
-                ImGui::DragFloat2("Sizes", sizesPercentage, 0.001f, 0.3f, 0.7f);
+                ImGui::DragFloat2("Sizes", sizesPercentage, 0.001f, 0.0f, 1.0f);
 
                 if (firstFrame) ImGui::SetKeyboardFocusHere(0);
                 if (ImGui::InputText("##input", buffer, sizeof(buffer), ImGuiInputTextFlags_EnterReturnsTrue)) {
@@ -178,6 +184,9 @@ int main(int, char**)
                 }
 
                 ImGui::Text("%.1f FPS @ %.0f*%.0f", io.Framerate, viewportSize.x, viewportSize.y);
+                ImGui::SameLine();
+				ImGui::Checkbox("Debug", &debug);
+
                 ImGui::End();
 
                 firstFrame = false;
@@ -186,9 +195,10 @@ int main(int, char**)
 
         // Rendering
         ImGui::Render();
-        const float fClear[4] = { 0.0f, 0.0f, 0.0f, 0.5f };
+        const float fClear[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+        const float fDebug[4] = { 0.0f, 0.3f, 0.3f, 0.3f };
         g_pd3dDeviceContext->OMSetRenderTargets(1, &g_mainRenderTargetView, nullptr);
-        g_pd3dDeviceContext->ClearRenderTargetView(g_mainRenderTargetView, fClear);
+        g_pd3dDeviceContext->ClearRenderTargetView(g_mainRenderTargetView, (debug) ? fDebug : fClear);
         ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
         // Present
