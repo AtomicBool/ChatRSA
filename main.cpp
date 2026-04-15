@@ -13,6 +13,9 @@ char add_key[512] = "";
 bool show_add_contact = false;
 ContactManager contact_manager("contacts.csv");
 
+// Selection State
+Contact selected_contact = { "", "" };
+
 // Private Variables & Constants
 int windowWidth, windowHeight;
 bool display = false;
@@ -165,7 +168,9 @@ int main(int, char**)
                 auto filteredContacts = contact_manager.search(buffer);
                 ImGui::BeginChild("ContactList", ImVec2(0, -ImGui::GetFrameHeightWithSpacing() * 2), true);
                 for (const auto& contact : filteredContacts) {
-                    if (ImGui::Selectable(contact.name.c_str())) {
+                    bool is_selected = (selected_contact.name == contact.name);
+                    if (ImGui::Selectable(contact.name.c_str(), is_selected)) {
+                        selected_contact = contact;
                     }
                     if (ImGui::IsItemHovered()) ImGui::SetTooltip("Public Key: %s", contact.public_key.c_str());
                 }
