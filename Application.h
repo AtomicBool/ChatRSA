@@ -3,6 +3,7 @@
 #include "RenderUtils.h"
 #include "contact.h"
 #include "UI.h"
+#include "Input.h"
 #include <vector>
 
 class Application {
@@ -15,19 +16,22 @@ public:
     void Shutdown();
 
 private:
+    // 所有的纯逻辑更新（按键、状态变化、计算）
     void Update();
+    
+    // 所有的渲染相关的操作（ImGui新帧、D3D绘制、Present）
     void Render();
+    
+    // 辅助函数：更新窗口显示状态（穿透/显示）
+    void UpdateWindowState();
+
     bool HandleEvents();
-    bool IsKeyPressed(int vkCode, ULONGLONG interval = 150);
 
 private:
     HWND m_hwnd = nullptr;
     UIState m_uiState;
     ContactManager m_contactManager;
     
-    // Input state
-    ULONGLONG m_lastKeyTime[256] = { 0 };
     DWORD m_dwExStyle = WS_EX_TOPMOST | WS_EX_LAYERED;
-    
     bool m_done = false;
 };

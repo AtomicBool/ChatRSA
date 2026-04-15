@@ -50,13 +50,17 @@ void Application::Run() {
     while (!m_done) {
         if (!HandleEvents()) break;
 
+        // skip if window is occuluded
         if (g_SwapChainOccluded && g_pSwapChain->Present(0, DXGI_PRESENT_TEST) == DXGI_STATUS_OCCLUDED) {
             ::Sleep(10);
             continue;
         }
         g_SwapChainOccluded = false;
 
+        // 1. logic part
         Update();
+
+        // 2. render
         Render();
     }
 }
@@ -75,48 +79,58 @@ bool Application::HandleEvents() {
 }
 
 void Application::Update() {
-    // Start the Dear ImGui frame
+    // 逻辑部分：F2 切换状态
+    // 我们使用了单例 Input 类，调用非常清晰
+    if (Input::Get().IsKeyPressed(VK_F2)) {
+        m_uiState.display = !m_uiState.display;
+        
+        UpdateWindowState();
+    }
+}
+
+/**
+ * Updates the overlay window's interactive state based on UI visibility.
+ *
+ * When the UI is visible:
+ * - allow the window to receive focus and mouse input
+ * - bring the window to the foreground
+ * - mark the next frame as the first visible frame
+ *
+ * When the UI is hidden:
+ * - make the window click-through
+ * - prevent it from taking focus
+ *
+ * The window is always kept topmost and its frame style is refreshed.
+ */
+void Application::UpdateWindowState() {
+    if (m_uiState.display) {
+        SetWindowLongPtr(m_hwnd, GWL_EXSTYLE, m_dwExStyle);
+        SetForegroundWindow(m_hwnd);
+        m_uiState.firstFrame = true;
+    }
+    else {
+        SetWindowLongPtr(m_hwnd, GWL_EXSTYLE, m_dwExStyle | WS_EX_TRANSPARENT | WS_EX_NOACTIVATE);
+    }
+    SetWindowPos(m_hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
+}
+
+void Application::Render() {
+    // ImGUI buffer
     ImGui_ImplDX11_NewFrame();
     ImGui_ImplWin32_NewFrame();
     ImGui::NewFrame();
 
-    // Key input handling
-    if (IsKeyPressed(VK_F2)) {
-        m_uiState.display = !m_uiState.display;
-        if (m_uiState.display) {
-            SetWindowLongPtr(m_hwnd, GWL_EXSTYLE, m_dwExStyle);
-            SetForegroundWindow(m_hwnd);
-            m_uiState.firstFrame = true;
-        }
-        else {
-            SetWindowLongPtr(m_hwnd, GWL_EXSTYLE, m_dwExStyle | WS_EX_TRANSPARENT | WS_EX_NOACTIVATE);
-        }
-        SetWindowPos(m_hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
-    }
-}
-
-void Application::Render() {
+    // render ui
     UI::Render(m_uiState, m_contactManager);
 
-    // Rendering
     ImGui::Render();
     const float fClear[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
     const float fDebug[4] = { 0.0f, 0.3f, 0.3f, 0.3f };
     g_pd3dDeviceContext->OMSetRenderTargets(1, &g_mainRenderTargetView, nullptr);
     g_pd3dDeviceContext->ClearRenderTargetView(g_mainRenderTargetView, (m_uiState.debug) ? fDebug : fClear);
+    
     ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
-    g_pSwapChain->Present(1, 0);
-}
-
-bool Application::IsKeyPressed(int vkCode, ULONGLONG interval) {
-    ULONGLONG now = GetTickCount64();
-    if (GetAsyncKeyState(vkCode) & 0x8000) {
-        if (now - m_lastKeyTime[vkCode] > interval) {
-            m_lastKeyTime[vkCode] = now;
-            return true;
-        }
-    }
-    return false;
+    g_pSwapChain->Present(1, 0); // 1 = VSync, 0 = No VSync
 }
 
 void Application::Shutdown() {
