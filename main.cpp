@@ -1,6 +1,6 @@
 #include "main.h"
 #include "RenderUtils.h"
-#include "search.h"
+#include "contact.h"
 #include "UI.h"
 
 // UI States

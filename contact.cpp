@@ -1,4 +1,4 @@
-#include "search.h"
+#include "contact.h"
 #include <sstream>
 
 ContactManager::ContactManager(const std::string& filename) : filename(filename) {
