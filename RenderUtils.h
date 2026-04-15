@@ -8,7 +8,7 @@
 struct WindowConfig {
     int width, height;
     int x, y;
-    float scale;
+    float dpiScale;
 };
 
 WindowConfig SetupWindowEnv(float widthPercent, float heightPercent);

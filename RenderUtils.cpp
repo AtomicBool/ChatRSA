@@ -16,13 +16,14 @@ ID3D11RenderTargetView* g_mainRenderTargetView = nullptr;
 WindowConfig SetupWindowEnv(float widthPercent, float heightPercent)
 {
     ImGui_ImplWin32_EnableDpiAwareness();
-
-    float scale = ImGui_ImplWin32_GetDpiScaleForMonitor(::MonitorFromPoint(POINT{ 0, 0 }, MONITOR_DEFAULTTOPRIMARY));
-    int screenWidth = GetSystemMetrics(SM_CXSCREEN) * scale;
-    int screenHeight = GetSystemMetrics(SM_CYSCREEN) * scale;
+    float dpiScale = ImGui_ImplWin32_GetDpiScaleForMonitor(::MonitorFromPoint(POINT{ 0, 0 }, MONITOR_DEFAULTTOPRIMARY));
+    
+    // DPI awareness is enabled so no need for scaling here
+    int screenWidth = GetSystemMetrics(SM_CXSCREEN);
+    int screenHeight = GetSystemMetrics(SM_CYSCREEN);
 
     WindowConfig config;
-    config.scale = scale;
+    config.dpiScale = dpiScale;
     config.width = screenWidth * widthPercent;
     config.height = screenHeight * heightPercent;
     config.x = (screenWidth - config.width) / 2;

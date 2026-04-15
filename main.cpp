@@ -36,6 +36,7 @@ int main(int, char**)
 {
     // 1. Setup Window and DPI
     auto winConfig = SetupWindowEnv(0.65f, 0.3f);
+
     hwnd = CreateAppWindow(winConfig, WndProc);
     if (!hwnd) return 1;
 
@@ -58,10 +59,10 @@ int main(int, char**)
     ImGuiIO& io = ImGui::GetIO(); (void)io;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
-    // Setup style and scaling
+    // Setup style and scaling for IMGUI
     ImGui::StyleColorsDark();
-    ImGui::GetStyle().ScaleAllSizes(winConfig.scale);
-    ImGui::GetStyle().FontScaleDpi = winConfig.scale;
+    ImGui::GetStyle().ScaleAllSizes(winConfig.dpiScale);
+    ImGui::GetStyle().FontScaleDpi = winConfig.dpiScale;
 
     // Setup Platform/Renderer backends
     ImGui_ImplWin32_Init(hwnd);
