@@ -19,3 +19,11 @@ void CleanupDeviceD3D();
 void CreateRenderTarget();
 void CleanupRenderTarget();
 LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+// Graphics Globals
+extern ID3D11Device*            g_pd3dDevice;
+extern ID3D11DeviceContext*     g_pd3dDeviceContext;
+extern IDXGISwapChain*          g_pSwapChain;
+extern bool                     g_SwapChainOccluded;
+extern UINT                     g_ResizeWidth, g_ResizeHeight;
+extern ID3D11RenderTargetView*  g_mainRenderTargetView;

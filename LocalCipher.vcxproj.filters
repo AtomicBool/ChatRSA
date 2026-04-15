@@ -45,13 +45,13 @@
     <ClCompile Include="RenderUtils.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="search.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="cipher.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="UI.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="contact.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Application.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -83,13 +83,16 @@
     <ClInclude Include="RenderUtils.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="search.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="main.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="cipher.h">
+    <ClInclude Include="contact.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="UI.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Application.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
