@@ -3,17 +3,12 @@
 #include "search.h"
 #include "UI.h"
 
-// UI State
+// UI States
 UIState uiState;
 ContactManager contact_manager("contacts.csv");
 
-// Private Variables & Constants
-int windowWidth, windowHeight;
+// Record of last key press times to implement debouncing
 ULONGLONG g_lastKeyTime[256] = { 0 };
-
-float scaleFactor;
-int screenWidth = GetSystemMetrics(SM_CXSCREEN);
-int screenHeight = GetSystemMetrics(SM_CYSCREEN);
 
 HWND hwnd;
 DWORD dwExStyle = WS_EX_TOPMOST | WS_EX_LAYERED;
@@ -39,59 +34,34 @@ static bool KeyPressed(int vkCode, ULONGLONG interval = 150) {
 // Main code
 int main(int, char**)
 {
-    // Make process DPI aware and obtain main monitor scale
-    ImGui_ImplWin32_EnableDpiAwareness();
-    scaleFactor = ImGui_ImplWin32_GetDpiScaleForMonitor(::MonitorFromPoint(POINT{ 0, 0 }, MONITOR_DEFAULTTOPRIMARY));
-	screenWidth *= scaleFactor;
-	screenHeight *= scaleFactor;
-    windowWidth = screenWidth * 0.65;
-	windowHeight = screenHeight * 0.3;
+    // 1. Setup Window and DPI
+    auto winConfig = SetupWindowEnv(0.65f, 0.3f);
+    hwnd = CreateAppWindow(winConfig, WndProc);
+    if (!hwnd) return 1;
 
-    // Create application window
-    WNDCLASSEXW wc = { sizeof(wc), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(nullptr), nullptr, nullptr, nullptr, nullptr, L"LocalCipher", nullptr };
-    ::RegisterClassExW(&wc);
-
-    hwnd = ::CreateWindowExW(
-        dwExStyle | WS_EX_TRANSPARENT | WS_EX_NOACTIVATE,
-        wc.lpszClassName,
-        L"LocalCipher",         // Window Title
-        WS_POPUP,               // No border
-        (screenWidth - windowWidth) / 2,
-        (screenHeight - windowHeight) / 2,
-        windowWidth,
-        windowHeight,
-        nullptr, nullptr, wc.hInstance, nullptr
-    );
-
-    // allowing transparent background
+    // 2. Initialize Alpha Compositing and Direct3D
     ImGui_ImplWin32_EnableAlphaCompositing(hwnd);
-
-    // Initialize Direct3D
     if (!CreateDeviceD3D(hwnd))
     {
         CleanupDeviceD3D();
-        ::UnregisterClassW(wc.lpszClassName, wc.hInstance);
         return 1;
     }
 
-    // Show the window
+    // 3. Show the window
     ::SetLayeredWindowAttributes(hwnd, 0, 255, LWA_ALPHA);
     ::ShowWindow(hwnd, SW_SHOWDEFAULT);
     ::UpdateWindow(hwnd);
 
-    // Setup ImGui context
+    // 4. Setup ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
-    // Setup Dear ImGui style
+    // Setup style and scaling
     ImGui::StyleColorsDark();
-
-    // Setup scaling
-    ImGuiStyle& style = ImGui::GetStyle();
-    style.ScaleAllSizes(scaleFactor);
-    style.FontScaleDpi = scaleFactor;
+    ImGui::GetStyle().ScaleAllSizes(winConfig.scale);
+    ImGui::GetStyle().FontScaleDpi = winConfig.scale;
 
     // Setup Platform/Renderer backends
     ImGui_ImplWin32_Init(hwnd);
@@ -157,7 +127,7 @@ int main(int, char**)
     ImGui::DestroyContext();
     CleanupDeviceD3D();
     ::DestroyWindow(hwnd);
-    ::UnregisterClassW(wc.lpszClassName, wc.hInstance);
+    ::UnregisterClassW(L"LocalCipher", GetModuleHandle(nullptr));
 
     return 0;
 }

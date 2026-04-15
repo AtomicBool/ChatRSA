@@ -13,6 +13,45 @@ bool                     g_SwapChainOccluded = false;
 UINT                     g_ResizeWidth = 0, g_ResizeHeight = 0;
 ID3D11RenderTargetView* g_mainRenderTargetView = nullptr;
 
+WindowConfig SetupWindowEnv(float widthPercent, float heightPercent)
+{
+    ImGui_ImplWin32_EnableDpiAwareness();
+
+    float scale = ImGui_ImplWin32_GetDpiScaleForMonitor(::MonitorFromPoint(POINT{ 0, 0 }, MONITOR_DEFAULTTOPRIMARY));
+    int screenWidth = GetSystemMetrics(SM_CXSCREEN) * scale;
+    int screenHeight = GetSystemMetrics(SM_CYSCREEN) * scale;
+
+    WindowConfig config;
+    config.scale = scale;
+    config.width = screenWidth * widthPercent;
+    config.height = screenHeight * heightPercent;
+    config.x = (screenWidth - config.width) / 2;
+    config.y = (screenHeight - config.height) / 2;
+
+    return config;
+}
+
+HWND CreateAppWindow(const WindowConfig& config, WNDPROC wndProc)
+{
+    HINSTANCE hInst = GetModuleHandle(nullptr);
+    WNDCLASSEXW wc = { sizeof(wc), CS_CLASSDC, wndProc, 0L, 0L, hInst, nullptr, nullptr, nullptr, nullptr, L"LocalCipher", nullptr };
+    ::RegisterClassExW(&wc);
+
+    DWORD dwExStyle = WS_EX_TOPMOST | WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_NOACTIVATE;
+
+    return ::CreateWindowExW(
+        dwExStyle,
+        wc.lpszClassName,
+        L"LocalCipher",         // Window Title
+        WS_POPUP,               // No border
+        config.x,
+        config.y,
+        config.width,
+        config.height,
+        nullptr, nullptr, wc.hInstance, nullptr
+    );
+}
+
 bool CreateDeviceD3D(HWND hWnd)
 {
     // Setup swap chain
