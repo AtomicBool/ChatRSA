@@ -5,11 +5,15 @@
 #include <iostream>
 #include <iomanip>
 
-#include "crypto/RSA.h"
 #include "ui/RenderUtils.h"
 #include "ui/UI.h"
+
 #include "utils/Contact.h"
 #include "utils/keyboard/InputEvents.h"
+
+#include "crypto/RSA.h"
+#include "utils/os/file.h"
+#include "utils/os/conversion.h"
 
 class Application
 {
@@ -22,6 +26,8 @@ public:
     void Shutdown();
 
 private:
+	bool initWindow();
+    bool loadKeyPair(std::string privateKeyPath = "private.key", std::string publicKeyPath = "public.key");
     void Update();
     void Render();
     void UpdateWindowState();
@@ -38,5 +44,8 @@ private:
     InputEvents m_input;
 
     DWORD m_dwExStyle = WS_EX_TOPMOST | WS_EX_LAYERED;
+    
+    RSA m_userRSA, m_peerRSA;
+    
     bool m_done = false;
 };

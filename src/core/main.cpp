@@ -1,49 +1,9 @@
 ﻿#include "core/Application.h"
 
-#include "utils/os/file.h"
-#include "utils/os/conversion.h"
+
 
 void rsa_demo() {
     RSA rsa_usr, rsa_peer;
-
-    const std::string privatePath = "private.key";
-    const std::string publicPath = "public.key";
-
-    bool loaded = false;
-
-    if (FileUtils::Exists(privatePath))
-    {
-        auto privateKey = FileUtils::LoadBinary(privatePath);
-
-        if (!privateKey.empty())
-        {
-            loaded = rsa_usr.ImportPrivateKey(privateKey);
-
-            if (loaded)
-            {
-                std::cout << "Loaded existing keypair\n";
-            }
-        }
-    }
-
-    if (!loaded)
-    {
-        std::cout << "Generating new keypair...\n";
-
-        if (!rsa_usr.GenerateKeyPair())
-        {
-            std::cout << "Key generation failed\n";
-            return;
-        }
-
-        auto publicKey = rsa_usr.ExportPublicKey();
-        auto privateKey = rsa_usr.ExportPrivateKey();
-
-        FileUtils::SaveBinary(publicPath, publicKey);
-        FileUtils::SaveBinary(privatePath, privateKey);
-
-        std::cout << "New keypair generated and saved\n";
-    }
 
     std::string msg =
         "你说的对，但是《原神》是由米哈游自主研发的一款全新开放世界冒险游戏。"
@@ -92,11 +52,10 @@ void rsa_demo() {
 
 int main(int, char**)
 {
-    rsa_demo();
-
     Application app;
 
     if (!app.Initialize()) {
+		printf("Failed to initialize application\n");
         return 1;
     }
 

@@ -17,7 +17,7 @@ Application::~Application()
 // =====================================================
 // INIT
 // =====================================================
-bool Application::Initialize()
+bool Application::initWindow()
 {
     auto winConfig = SetupWindowEnv(0.65f, 0.3f);
 
@@ -50,6 +50,49 @@ bool Application::Initialize()
     ImGui_ImplDX11_Init(g_pd3dDevice, g_pd3dDeviceContext);
 
     return true;
+}
+
+bool Application::loadKeyPair(std::string privateKeyPath, std::string publicKeyPath) {
+    bool loaded = false;
+
+    if (FileUtils::Exists(privateKeyPath))
+    {
+        auto privateKey = FileUtils::LoadBinary(privateKeyPath);
+
+        if (!privateKey.empty())
+        {
+            loaded = m_userRSA.ImportPrivateKey(privateKey);
+
+            if (loaded)
+            {
+                std::cout << "Loaded existing keypair\n";
+            }
+        }
+    }
+
+    if (!loaded)
+    {
+        std::cout << "Generating new keypair...\n";
+
+        if (!m_userRSA.GenerateKeyPair())
+        {
+            std::cout << "Key generation failed\n";
+            return false;
+        }
+
+        auto publicKey = m_userRSA.ExportPublicKey();
+        auto privateKey = m_userRSA.ExportPrivateKey();
+
+        FileUtils::SaveBinary(publicKeyPath, publicKey);
+        FileUtils::SaveBinary(privateKeyPath, privateKey);
+
+        std::cout << "New keypair generated and saved\n";
+    }
+}
+
+bool Application::Initialize()
+{
+    return initWindow() || loadKeyPair();
 }
 
 // =====================================================
@@ -103,6 +146,14 @@ void Application::Update()
         UpdateWindowState();
     }
 
+    if (m_input.IsPressed(VK_F1)) {
+
+    }
+
+    if (m_input.IsPressed(VK_F3)) {
+        
+	}
+
     // =====================================================
     // handle UI events (NEW MODEL)
     // =====================================================
@@ -118,35 +169,35 @@ void Application::ProcessUIEvents()
     {
         switch (e.type)
         {
-        case UIEvent::Type::AddContact:
-        {
-            const auto& p = e.addContact;
-
-            if (!p.name.empty() && !p.publicKey.empty())
+            case UIEvent::Type::AddContact:
             {
-                m_contactManager.addContact({
-                    p.name,
-                    p.publicKey
-                });
+                const auto& p = e.addContact;
+
+                if (!p.name.empty() && !p.publicKey.empty())
+                {
+                    m_contactManager.addContact({
+                        p.name,
+                        p.publicKey
+                    });
+                }
+                printf(
+                    "[added] %s\n", e.addContact.name.c_str()
+                );
+                break;
             }
-            printf(
-                "[added] %s\n", e.addContact.name.c_str()
-            );
-            break;
-        }
 
-        case UIEvent::Type::SelectContact:
-        {
-            printf(
-                "[selected] %d\n", e.selectContact.index
-            );
-            // UI-only
-            break;
-        }
+            case UIEvent::Type::SelectContact:
+            {
+                printf(
+                    "[selected] %d\n", e.selectContact.index
+                );
+                // UI-only
+                break;
+            }
 
-        default:
-            break;
-        }
+            default:
+                break;
+            }
     }
 
     m_uiState.ClearEvents();
