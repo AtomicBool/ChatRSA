@@ -29,7 +29,7 @@ struct UIEvent
 
     struct SelectContactPayload
     {
-        int index = -1;
+        Contact selected;
     } selectContact{};
 };
 
@@ -51,52 +51,54 @@ struct ContactViewModel
 //
 struct UIState
 {
-    // layout
-    float sizesPercentage[2] = { 0.45f, 0.6f };
+    // public
+        // flags
+        bool debug = false;
+        bool display = false;
+        bool firstFrame = false;
 
-    // flags
-    bool debug = false;
-    bool display = false;
-    bool firstFrame = false;
+        // events
+        std::vector<UIEvent> events;
 
-    // input
-    char searchBuffer[256] = { 0 };
+        // input
+        char searchBuffer[256] = { 0 };
 
-    // add contact
-    bool showAddContact = false;
-    char addName[128] = { 0 };
-    char addKey[512] = { 0 };
+    // private
+        // layout
+        float sizesPercentage[2] = { 0.45f, 0.6f };
 
-    // selection
-    int selectedContactIndex = -1;
+        // add contact
+        bool showAddContact = false;
+        char addName[128] = { 0 };
+        char addKey[512] = { 0 };
 
-    // events
-    std::vector<UIEvent> events;
+        // selection
+        std::string selectedContactName = "";
 
     // -------------------------
     // event helpers
     // -------------------------
+    // public
+        void ClearEvents()
+        {
+            events.clear();
+        }
+    // private
+        void PushAddContact(const std::string& name, const std::string& key)
+        {
+            UIEvent e;
+            e.type = UIEvent::Type::AddContact;
+            e.addContact = { name, key };
+            events.push_back(e);
+        }
 
-    void PushAddContact(const std::string& name, const std::string& key)
-    {
-        UIEvent e;
-        e.type = UIEvent::Type::AddContact;
-        e.addContact = { name, key };
-        events.push_back(e);
-    }
-
-    void PushSelectContact(int index)
-    {
-        UIEvent e;
-        e.type = UIEvent::Type::SelectContact;
-        e.selectContact = { index };
-        events.push_back(e);
-    }
-
-    void ClearEvents()
-    {
-        events.clear();
-    }
+        void PushSelectContact(Contact m_contact)
+        {
+            UIEvent e;
+            e.type = UIEvent::Type::SelectContact;
+            e.selectContact = { m_contact };
+            events.push_back(e);
+        }
 };
 
 //

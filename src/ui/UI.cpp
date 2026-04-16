@@ -2,7 +2,6 @@
 #include <cstring>
 
 namespace UI {
-
     void Render(UIState& state, const ContactViewModel& vm)
     {
         if (!state.display)
@@ -67,28 +66,28 @@ namespace UI {
         {
             const auto& contact = vm.contacts[i];
 
-            bool selected = (state.selectedContactIndex == i);
+            bool selected = (contact.name == state.selectedContactName);
 
             if (ImGui::Selectable(contact.name.c_str(), selected))
             {
-                state.selectedContactIndex = i;
+                state.selectedContactName = contact.name;
 
-                state.PushSelectContact(i);
+                state.PushSelectContact(contact);
             }
 
-            if (ImGui::IsItemHovered())
-            {
-                ImGui::SetTooltip(
-                    "Public Key: %s",
-                    contact.public_key.c_str()
-                );
-            }
+            //if (ImGui::IsItemHovered())
+            //{
+            //    ImGui::SetTooltip(
+            //        "Public Key: %s",
+            //        contact.public_key.c_str()
+            //    );
+            //}
         }
 
         ImGui::EndChild();
 
         // =====================================================
-        // Add contact button (UI intent only)
+        // Add contact button
         // =====================================================
         if (ImGui::Button("Add New Contact"))
         {

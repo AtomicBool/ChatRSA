@@ -147,11 +147,13 @@ void Application::Update()
     }
 
     if (m_input.IsPressed(VK_F1)) {
-
+		// f1 -> copy -> read clipboard -> decrypt -> print
+		m_userRSA.Decrypt(Conversion::StringToBytes("MSG"));
     }
 
     if (m_input.IsPressed(VK_F3)) {
-        
+		// f3 -> select all -> copy -> read clipboard -> decrypt -> write clipboard -> paste -> print
+        m_peerRSA.ImportPublicKey(Conversion::StringToBytes(m_selectedContact.public_key));
 	}
 
     // =====================================================
@@ -181,17 +183,20 @@ void Application::ProcessUIEvents()
                     });
                 }
                 printf(
-                    "[added] %s\n", e.addContact.name.c_str()
+                    "[added] %s\n", p.name.c_str()
                 );
                 break;
             }
 
             case UIEvent::Type::SelectContact:
             {
+                const auto& p = e.selectContact;
+                m_selectedContact = p.selected;
+
                 printf(
-                    "[selected] %d\n", e.selectContact.index
+                    "[selected] %s\n", m_selectedContact.name.c_str()
                 );
-                // UI-only
+
                 break;
             }
 

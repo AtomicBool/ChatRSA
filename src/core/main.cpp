@@ -1,7 +1,5 @@
 ﻿#include "core/Application.h"
 
-
-
 void rsa_demo() {
     RSA rsa_usr, rsa_peer;
 

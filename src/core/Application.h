@@ -37,15 +37,15 @@ private:
 
 private:
     HWND m_hwnd = nullptr;
+    DWORD m_dwExStyle = WS_EX_TOPMOST | WS_EX_LAYERED;
 
     UIState m_uiState;
     ContactManager m_contactManager;
-
     InputEvents m_input;
-
-    DWORD m_dwExStyle = WS_EX_TOPMOST | WS_EX_LAYERED;
     
     RSA m_userRSA, m_peerRSA;
-    
+
+	Contact m_selectedContact;
+
     bool m_done = false;
 };
