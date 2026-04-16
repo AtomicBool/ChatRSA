@@ -1,9 +1,9 @@
 #pragma once
-
 #include <windows.h>
 #include <bcrypt.h>
 #include <vector>
 #include <string>
+#include <algorithm>
 
 #pragma comment(lib, "bcrypt.lib")
 
@@ -25,11 +25,19 @@ public:
     bool ImportPrivateKey(const std::vector<uint8_t>& blob);
 
 private:
-    BCRYPT_ALG_HANDLE m_alg = nullptr;
-    BCRYPT_KEY_HANDLE m_publicKey = nullptr;
-    BCRYPT_KEY_HANDLE m_privateKey = nullptr;
+    ULONG PADDING_FLAG = BCRYPT_PAD_PKCS1;
+
+    std::vector<uint8_t> EncryptBlock(
+        const uint8_t* data,
+        size_t size
+    );
+
+    std::vector<uint8_t> DecryptBlock(
+        const uint8_t* data,
+        size_t size
+    );
 
 private:
-    std::vector<uint8_t> EncryptBlock(const uint8_t* data, size_t size);
-    std::vector<uint8_t> DecryptBlock(const uint8_t* data, size_t size);
+    BCRYPT_ALG_HANDLE m_alg;
+    BCRYPT_KEY_HANDLE m_key;
 };

@@ -1,58 +1,80 @@
 #include "crypto/RSA.h"
 
 RSA::RSA()
+    : m_alg(nullptr), m_key(nullptr)
 {
-    BCryptOpenAlgorithmProvider(
+    NTSTATUS status = BCryptOpenAlgorithmProvider(
         &m_alg,
         BCRYPT_RSA_ALGORITHM,
         nullptr,
         0
     );
+
+    if (!BCRYPT_SUCCESS(status))
+    {
+        m_alg = nullptr;
+    }
 }
 
 RSA::~RSA()
 {
-    if (m_publicKey) BCryptDestroyKey(m_publicKey);
-    if (m_privateKey) BCryptDestroyKey(m_privateKey);
-    if (m_alg) BCryptCloseAlgorithmProvider(m_alg, 0);
+    if (m_key)
+    {
+        BCryptDestroyKey(m_key);
+        m_key = nullptr;
+    }
+
+    if (m_alg)
+    {
+        BCryptCloseAlgorithmProvider(m_alg, 0);
+        m_alg = nullptr;
+    }
 }
 
-// =====================================================
-// KEY GENERATION
-// =====================================================
 bool RSA::GenerateKeyPair(int keySize)
 {
     if (!m_alg) return false;
 
-    if (BCryptGenerateKeyPair(m_alg, &m_privateKey, keySize, 0) != 0)
+    if (m_key)
+    {
+        BCryptDestroyKey(m_key);
+        m_key = nullptr;
+    }
+
+    NTSTATUS status = BCryptGenerateKeyPair(
+        m_alg,
+        &m_key,
+        keySize,
+        0
+    );
+
+    if (!BCRYPT_SUCCESS(status))
         return false;
 
-    if (BCryptFinalizeKeyPair(m_privateKey, 0) != 0)
-        return false;
+    status = BCryptFinalizeKeyPair(m_key, 0);
 
-    // derive public key
-    m_publicKey = m_privateKey;
-
-    return true;
+    return BCRYPT_SUCCESS(status);
 }
 
-// =====================================================
-// ENCRYPT (chunked)
-// =====================================================
 std::vector<uint8_t> RSA::Encrypt(const std::string& data)
 {
     std::vector<uint8_t> result;
 
-    size_t blockSize = 190; // safe for 2048-bit RSA PKCS1 padding
+    if (!m_key) return result;
+
+    const size_t blockSize = 245; // 2048-bit RSA PKCS1 max plaintext
 
     for (size_t i = 0; i < data.size(); i += blockSize)
     {
         size_t len = min(blockSize, data.size() - i);
 
         auto block = EncryptBlock(
-            (const uint8_t*)data.data() + i,
+            reinterpret_cast<const uint8_t*>(data.data()) + i,
             len
         );
+
+        if (block.empty())
+            return {};
 
         result.insert(result.end(), block.begin(), block.end());
     }
@@ -60,14 +82,13 @@ std::vector<uint8_t> RSA::Encrypt(const std::string& data)
     return result;
 }
 
-// =====================================================
-// DECRYPT (chunked)
-// =====================================================
 std::string RSA::Decrypt(const std::vector<uint8_t>& data)
 {
     std::string result;
 
-    size_t blockSize = 256; // RSA 2048 output size
+    if (!m_key) return result;
+
+    const size_t blockSize = 256; // 2048-bit RSA ciphertext size
 
     for (size_t i = 0; i < data.size(); i += blockSize)
     {
@@ -75,97 +96,107 @@ std::string RSA::Decrypt(const std::vector<uint8_t>& data)
 
         auto block = DecryptBlock(data.data() + i, len);
 
+        if (block.empty())
+            return "";
+
         result.append(block.begin(), block.end());
     }
 
     return result;
 }
 
-// =====================================================
-// BLOCK ENCRYPT
-// =====================================================
-std::vector<uint8_t> RSA::EncryptBlock(const uint8_t* data, size_t size)
+std::vector<uint8_t> RSA::EncryptBlock(
+    const uint8_t* data,
+    size_t size)
 {
     ULONG outSize = 0;
 
-    BCryptEncrypt(
-        m_publicKey,
-        (PUCHAR)data,
-        (ULONG)size,
+    NTSTATUS status = BCryptEncrypt(
+        m_key,
+        const_cast<PUCHAR>(data),
+        static_cast<ULONG>(size),
         nullptr,
         nullptr,
         0,
         nullptr,
         0,
         &outSize,
-        BCRYPT_PAD_PKCS1
+        PADDING_FLAG
     );
+
+    if (!BCRYPT_SUCCESS(status))
+        return {};
 
     std::vector<uint8_t> out(outSize);
 
-    BCryptEncrypt(
-        m_publicKey,
-        (PUCHAR)data,
-        (ULONG)size,
+    status = BCryptEncrypt(
+        m_key,
+        const_cast<PUCHAR>(data),
+        static_cast<ULONG>(size),
         nullptr,
         nullptr,
         0,
         out.data(),
         outSize,
         &outSize,
-        BCRYPT_PAD_PKCS1
+        PADDING_FLAG
     );
+
+    if (!BCRYPT_SUCCESS(status))
+        return {};
 
     return out;
 }
 
-// =====================================================
-// BLOCK DECRYPT
-// =====================================================
-std::vector<uint8_t> RSA::DecryptBlock(const uint8_t* data, size_t size)
+std::vector<uint8_t> RSA::DecryptBlock(
+    const uint8_t* data,
+    size_t size)
 {
     ULONG outSize = 0;
 
-    BCryptDecrypt(
-        m_privateKey,
-        (PUCHAR)data,
-        (ULONG)size,
+    NTSTATUS status = BCryptDecrypt(
+        m_key,
+        const_cast<PUCHAR>(data),
+        static_cast<ULONG>(size),
         nullptr,
         nullptr,
         0,
         nullptr,
         0,
         &outSize,
-        BCRYPT_PAD_PKCS1
+        PADDING_FLAG
     );
+
+    if (!BCRYPT_SUCCESS(status))
+        return {};
 
     std::vector<uint8_t> out(outSize);
 
-    BCryptDecrypt(
-        m_privateKey,
-        (PUCHAR)data,
-        (ULONG)size,
+    status = BCryptDecrypt(
+        m_key,
+        const_cast<PUCHAR>(data),
+        static_cast<ULONG>(size),
         nullptr,
         nullptr,
         0,
         out.data(),
         outSize,
         &outSize,
-        BCRYPT_PAD_PKCS1
+        PADDING_FLAG
     );
+
+    if (!BCRYPT_SUCCESS(status))
+        return {};
 
     return out;
 }
 
-// =====================================================
-// EXPORT (simple blob)
-// =====================================================
 std::vector<uint8_t> RSA::ExportPublicKey()
 {
     ULONG size = 0;
 
-    BCryptExportKey(
-        m_publicKey,
+    NTSTATUS status = BCryptExportKey(
+        m_key,
         nullptr,
         BCRYPT_PUBLIC_KEY_BLOB,
         nullptr,
@@ -174,10 +205,13 @@ std::vector<uint8_t> RSA::ExportPublicKey()
         0
     );
 
+    if (!BCRYPT_SUCCESS(status))
+        return {};
+
     std::vector<uint8_t> blob(size);
 
-    BCryptExportKey(
-        m_publicKey,
+    status = BCryptExportKey(
+        m_key,
         nullptr,
         BCRYPT_PUBLIC_KEY_BLOB,
         blob.data(),
@@ -186,16 +220,18 @@ std::vector<uint8_t> RSA::ExportPublicKey()
         0
     );
 
+    if (!BCRYPT_SUCCESS(status))
+        return {};
+
     return blob;
 }
 
-// =====================================================
 std::vector<uint8_t> RSA::ExportPrivateKey()
 {
     ULONG size = 0;
 
-    BCryptExportKey(
-        m_privateKey,
+    NTSTATUS status = BCryptExportKey(
+        m_key,
         nullptr,
         BCRYPT_RSAFULLPRIVATE_BLOB,
         nullptr,
@@ -204,10 +240,13 @@ std::vector<uint8_t> RSA::ExportPrivateKey()
         0
     );
 
+    if (!BCRYPT_SUCCESS(status))
+        return {};
+
     std::vector<uint8_t> blob(size);
 
-    BCryptExportKey(
-        m_privateKey,
+    status = BCryptExportKey(
+        m_key,
         nullptr,
         BCRYPT_RSAFULLPRIVATE_BLOB,
         blob.data(),
@@ -216,40 +255,54 @@ std::vector<uint8_t> RSA::ExportPrivateKey()
         0
     );
 
+    if (!BCRYPT_SUCCESS(status))
+        return {};
+
     return blob;
 }
 
-// =====================================================
-// IMPORT
-// =====================================================
 bool RSA::ImportPublicKey(const std::vector<uint8_t>& blob)
 {
-    if (BCryptImportKeyPair(
+    if (!m_alg) return false;
+
+    if (m_key)
+    {
+        BCryptDestroyKey(m_key);
+        m_key = nullptr;
+    }
+
+    NTSTATUS status = BCryptImportKeyPair(
         m_alg,
         nullptr,
         BCRYPT_PUBLIC_KEY_BLOB,
-        &m_publicKey,
-        (PUCHAR)blob.data(),
-        (ULONG)blob.size(),
+        &m_key,
+        const_cast<PUCHAR>(blob.data()),
+        static_cast<ULONG>(blob.size()),
         0
-    ) != 0)
-        return false;
+    );
 
-    return true;
+    return BCRYPT_SUCCESS(status);
 }
 
 bool RSA::ImportPrivateKey(const std::vector<uint8_t>& blob)
 {
-    if (BCryptImportKeyPair(
+    if (!m_alg) return false;
+
+    if (m_key)
+    {
+        BCryptDestroyKey(m_key);
+        m_key = nullptr;
+    }
+
+    NTSTATUS status = BCryptImportKeyPair(
         m_alg,
         nullptr,
         BCRYPT_RSAFULLPRIVATE_BLOB,
-        &m_privateKey,
-        (PUCHAR)blob.data(),
-        (ULONG)blob.size(),
+        &m_key,
+        const_cast<PUCHAR>(blob.data()),
+        static_cast<ULONG>(blob.size()),
         0
-    ) != 0)
-        return false;
+    );
 
-    return true;
+    return BCRYPT_SUCCESS(status);
 }

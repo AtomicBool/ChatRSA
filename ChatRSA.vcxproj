@@ -171,10 +171,12 @@
     <ClInclude Include="src\ui\RenderUtils.h" />
     <ClInclude Include="src\ui\UI.h" />
     <ClInclude Include="src\utils\Contact.h" />
+    <ClInclude Include="src\utils\keyboard\InputEvents.h" />
+    <ClInclude Include="src\utils\keyboard\KeyboardController.h" />
+    <ClInclude Include="src\utils\keyboard\KeyboardState.h" />
     <ClInclude Include="src\utils\os\clipboard.h" />
-    <ClInclude Include="src\utils\os\InputEvents.h" />
-    <ClInclude Include="src\utils\os\KeyboardController.h" />
-    <ClInclude Include="src\utils\os\KeyboardState.h" />
+    <ClInclude Include="src\utils\os\conversion.h" />
+    <ClInclude Include="src\utils\os\file.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -2,7 +2,7 @@
 #include <unordered_map>
 #include <windows.h>
 
-#include "utils/os/KeyboardState.h"
+#include "utils/keyboard/KeyboardState.h"
 
 class InputEvents
 {

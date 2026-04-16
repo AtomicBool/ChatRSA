@@ -2,12 +2,14 @@
 
 #include <tchar.h>
 #include <windows.h>
+#include <iostream>
+#include <iomanip>
 
 #include "crypto/RSA.h"
 #include "ui/RenderUtils.h"
 #include "ui/UI.h"
 #include "utils/Contact.h"
-#include "utils/os/InputEvents.h"
+#include "utils/keyboard/InputEvents.h"
 
 class Application
 {
