@@ -6,7 +6,7 @@
 #include "ui/RenderUtils.h"
 #include "ui/UI.h"
 #include "utils/Contact.h"
-#include "utils/InputEvents.h"
+#include "utils/os/InputEvents.h"
 
 class Application
 {

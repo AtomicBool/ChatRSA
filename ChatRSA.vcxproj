@@ -169,9 +169,10 @@
     <ClInclude Include="src\ui\RenderUtils.h" />
     <ClInclude Include="src\ui\UI.h" />
     <ClInclude Include="src\utils\Contact.h" />
-    <ClInclude Include="src\utils\InputEvents.h" />
-    <ClInclude Include="src\utils\KeyboardController.h" />
-    <ClInclude Include="src\utils\KeyboardState.h" />
+    <ClInclude Include="src\utils\os\clipboard.h" />
+    <ClInclude Include="src\utils\os\InputEvents.h" />
+    <ClInclude Include="src\utils\os\KeyboardController.h" />
+    <ClInclude Include="src\utils\os\KeyboardState.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

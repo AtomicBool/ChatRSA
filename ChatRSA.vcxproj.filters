@@ -20,6 +20,9 @@
     <Filter Include="Vendor\imgui\backends">
       <UniqueIdentifier>{65c37279-71d6-491e-819b-5034504f3347}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Utils\os">
+      <UniqueIdentifier>{e3e1b7c8-defb-4314-beda-4ca48abd31ec}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <!-- Core 模块 -->
@@ -97,14 +100,17 @@
     <ClInclude Include="lib\imgui\imstb_truetype.h">
       <Filter>Vendor\imgui</Filter>
     </ClInclude>
-    <ClInclude Include="src\utils\KeyboardState.h">
-      <Filter>Utils</Filter>
+    <ClInclude Include="src\utils\os\clipboard.h">
+      <Filter>Utils\os</Filter>
     </ClInclude>
-    <ClInclude Include="src\utils\InputEvents.h">
-      <Filter>Utils</Filter>
+    <ClInclude Include="src\utils\os\InputEvents.h">
+      <Filter>Utils\os</Filter>
     </ClInclude>
-    <ClInclude Include="src\utils\KeyboardController.h">
-      <Filter>Utils</Filter>
+    <ClInclude Include="src\utils\os\KeyboardController.h">
+      <Filter>Utils\os</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\os\KeyboardState.h">
+      <Filter>Utils\os</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
