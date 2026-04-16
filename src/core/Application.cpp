@@ -1,8 +1,9 @@
 ﻿#include "core/Application.h"
 #include <tchar.h>
 
-Application::Application() 
-    : m_contactManager("contacts.csv") 
+Application::Application()
+    : m_contactManager("contacts.csv")
+    , m_keyboard(Keyboard::Get())
 {
 }
 
@@ -79,7 +80,7 @@ bool Application::HandleEvents() {
 }
 
 void Application::Update() {
-    if (Keyboard::Get().IsKeyPressed(VK_F2)) {
+    if (m_keyboard.IsKeyPressed(VK_F2)) {
         m_uiState.display = !m_uiState.display;
         
         UpdateWindowState();

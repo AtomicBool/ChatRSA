@@ -28,6 +28,7 @@ private:
     HWND m_hwnd = nullptr;
     UIState m_uiState;
     ContactManager m_contactManager;
+    Keyboard& m_keyboard;
     
     DWORD m_dwExStyle = WS_EX_TOPMOST | WS_EX_LAYERED;
     bool m_done = false;
