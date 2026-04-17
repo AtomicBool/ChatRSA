@@ -1,18 +1,20 @@
 # [ChatRSA](https://atomicbool.github.io/ChatRSA/)
 
-<p align="center">
-    <picture>
-        <img src="./icon.png" alt="OpenClaw" width="120">
-    </picture>
-</p>
+<table style="width:100%">
+    <tr>
+        <td style="width:50%; vertical-align:middle; text-align:center;">
+            <picture>
+                <source media="(prefers-color-scheme: light)" srcset="./img/logo_dark.png">
+                <img src="./img/logo.png" alt="OpenClaw" width="120">
+            </picture>
+        </td>
+        <td style="width:50%; vertical-align:top; text-align: left;">
+            <p>一个本地聊天软件加密层</p>
+            <a href="https://github.com/AtomicBool/ChatRSA/releases"><img src="https://img.shields.io/github/v/release/atomicbool/ChatRSA?include_prereleases&style=for-the-badge" alt="GitHub release"></a>
+        </td>
+    </tr>
+</table>
 
-<p align="center">
-  <strong>一个本地聊天软件加密层</strong>
-</p>
-
-<p align="center">
-  <a href="https://github.com/AtomicBool/ChatRSA/releases"><img src="https://img.shields.io/github/v/release/atomicbool/ChatRSA?include_prereleases&style=for-the-badge" alt="GitHub release"></a>
-</p>  
 原本2025年底有的想法, 鸽了半年。  
 得亏了gemini-cli和gpt的协作，三天内写完了  
 但感觉架构有点问题, 后续可能不是太有时间维护
