@@ -7,7 +7,7 @@
 class InputEvents
 {
 public:
-    bool IsPressed(int vk, ULONGLONG cooldownMs = 150)
+    bool IsPressed(int vk, ULONGLONG cooldownMs = 165)
     {
         ULONGLONG now = GetTickCount64();
 

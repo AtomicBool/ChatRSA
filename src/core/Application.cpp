@@ -103,6 +103,8 @@ bool Application::loadKeyPair(std::string privateKeyPath, std::string publicKeyP
 
     std::string publicKeyHexString = Conversion::BytesToString(m_userRSA.ExportPublicKey());
     std::cout << "[Public Key] " << publicKeyHexString << std::endl;
+
+    return true;
 }
 
 bool Application::Initialize()
