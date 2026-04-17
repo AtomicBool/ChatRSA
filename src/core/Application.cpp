@@ -181,7 +181,9 @@ void Application::Update()
             std::cout << "[Decrypt failed] " << e.what() << std::endl;
         }
 
-        m_popupState.text = Conversion::GBKToUTF8(res);
+		std::cout << "[Decrypted] " << res << std::endl;
+
+        m_popupState.text = res;
         m_popupState.visible = true;
         m_popupState.lastMousePos = mousePos;
     }
@@ -193,7 +195,9 @@ void Application::Update()
         m_keyboard.Combo({ VK_CONTROL, 'A' });
         m_keyboard.Combo({ VK_CONTROL, 'C' });
         std::string clipboardText = m_clipboard.GetText();
-		m_clipboard.SetText(Conversion::BytesToString(m_peerRSA.Encrypt(clipboardText)));
+		m_clipboard.SetText(
+            Conversion::BytesToString(m_peerRSA.Encrypt(clipboardText))
+        );
         m_keyboard.Combo({ VK_CONTROL, 'V' });
 	}
 
