@@ -11,18 +11,26 @@ public:
     {
         ULONGLONG now = GetTickCount64();
 
-        if (!KeyboardState::IsDown(vk))
+        bool down = KeyboardState::IsDown(vk);
+        bool& prevDown = m_prev[vk];
+        ULONGLONG& lastTime = m_last[vk];
+
+        // edge detection
+        bool isNewPress = (down && !prevDown);
+
+        prevDown = down;
+
+        if (!isNewPress)
             return false;
 
-        auto& last = m_last[vk];
-
-        if (now - last < cooldownMs)
+        if (now - lastTime < cooldownMs)
             return false;
 
-        last = now;
+        lastTime = now;
         return true;
     }
 
 private:
+    std::unordered_map<int, bool> m_prev;
     std::unordered_map<int, ULONGLONG> m_last;
 };
